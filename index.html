@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Course Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #faf6f1;
+            color: #3a3a3a;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 2rem 1rem 4rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: #2c2c2c;
+            margin-bottom: 0.25rem;
+        }
+
+        header p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .progress-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-header span {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .progress-header .count {
+            color: #888;
+            font-weight: 400;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: #ede8e2;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e8734a, #d4573a);
+            border-radius: 6px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .week-card {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+
+        .week-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .week-card.completed {
+            opacity: 0.85;
+        }
+
+        .week-card.completed .week-header {
+            background: #f5f2ee;
+        }
+
+        .week-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            gap: 1rem;
+            user-select: none;
+        }
+
+        .week-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            color: #fff;
+        }
+
+        .week-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .week-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #b08d57;
+        }
+
+        .week-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin: 0.1rem 0;
+        }
+
+        .week-desc {
+            font-size: 0.85rem;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .week-toggle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ede8e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .week-toggle svg {
+            width: 16px;
+            height: 16px;
+            color: #999;
+        }
+
+        .week-card.open .week-toggle {
+            transform: rotate(180deg);
+        }
+
+        .week-body {
+            display: none;
+            padding: 0 1.25rem 1.25rem;
+            border-top: 1px solid #f0ece7;
+        }
+
+        .week-card.open .week-body {
+            display: block;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 0 0.75rem;
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e8734a;
+            cursor: pointer;
+        }
+
+        .checkbox-row label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .notes-area {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #e5e0da;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            background: #faf8f5;
+            color: #3a3a3a;
+            transition: border-color 0.2s;
+        }
+
+        .notes-area:focus {
+            outline: none;
+            border-color: #e8734a;
+        }
+
+        .notes-area::placeholder {
+            color: #bbb;
+        }
+
+        .completed-badge {
+            display: inline-block;
+            background: #e8734a;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .suggest-next {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .suggest-next p {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .suggest-next strong {
+            font-size: 1rem;
+            color: #e8734a;
+        }
+
+        .suggest-next.all-done strong {
+            color: #4caf50;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 1rem 0.75rem 3rem; }
+            header h1 { font-size: 1.4rem; }
+            .week-header { padding: 0.85rem 1rem; }
+            .week-icon { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 10px; }
+            .week-title { font-size: 1rem; }
+            .week-body { padding: 0 1rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Course Tracker</h1>
+            <p>Track your progress through 10 weekends of learning</p>
+        </header>
+
+        <div class="progress-section">
+            <div class="progress-header">
+                <span>Overall Progress</span>
+                <span class="count" id="progress-count">0 / 10 completed</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="weeks-list"></div>
+
+        <div class="suggest-next" id="suggest-next"></div>
+    </div>
+
+    <script>
+        const WEEKS = [
+            { id: 1, title: "Resolution Tracker", desc: "Vibe code an AI-powered system to track your goals and keep you accountable.", color: "#d94f4f", icon: "◎" },
+            { id: 2, title: "Model Mapping", desc: "Create your personal AI model guide — know which tools work best for what.", color: "#e8874a", icon: "✍" },
+            { id: 3, title: "Deep Research", desc: "Master the art of AI-assisted deep research on any topic.", color: "#d4a834", icon: "⚗" },
+            { id: 4, title: "Data Analyst", desc: "Transform raw data into insights using AI-powered analysis.", color: "#4aab6e", icon: "▓" },
+            { id: 5, title: "Visual Reasoning", desc: "Explore multimodal AI — analyze and create with images.", color: "#5da87a", icon: "◉" },
+            { id: 6, title: "Information Pipelines", desc: "Build automated flows to gather, process, and deliver information.", color: "#5b9ec4", icon: "↻" },
+            { id: 7, title: "Automation: Distribution", desc: "Automate content creation and distribution across platforms.", color: "#7b6bc4", icon: "✈" },
+            { id: 8, title: "Automation: Productivity", desc: "Supercharge your daily workflow with AI automation.", color: "#c45ba0", icon: "⚡" },
+            { id: 9, title: "Context Engineering", desc: "Master the art of prompting and context design for better AI outputs.", color: "#8b5bc4", icon: "⚙" },
+            { id: 10, title: "Build an AI App", desc: "Bring it all together — build a complete AI-powered application.", color: "#8b7355", icon: "⚒" },
+        ];
+
+        const STORAGE_KEY = "ai-course-tracker";
+
+        function loadData() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            } catch {
+                return {};
+            }
+        }
+
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function render() {
+            const data = loadData();
+            const list = document.getElementById("weeks-list");
+            list.innerHTML = "";
+
+            let completedCount = 0;
+
+            WEEKS.forEach(week => {
+                const weekData = data[week.id] || { completed: false, notes: "" };
+                if (weekData.completed) completedCount++;
+
+                const card = document.createElement("div");
+                card.className = "week-card" + (weekData.completed ? " completed" : "");
+
+                card.innerHTML = `
+                    <div class="week-header" data-id="${week.id}">
+                        <div class="week-icon" style="background:${week.color}">${week.icon}</div>
+                        <div class="week-info">
+                            <div class="week-label">Week ${week.id}</div>
+                            <div class="week-title">${week.title}${weekData.completed ? '<span class="completed-badge">Done</span>' : ''}</div>
+                            <div class="week-desc">${week.desc}</div>
+                        </div>
+                        <div class="week-toggle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                    </div>
+                    <div class="week-body">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="check-${week.id}" ${weekData.completed ? "checked" : ""}>
+                            <label for="check-${week.id}">Mark as completed</label>
+                        </div>
+                        <textarea class="notes-area" data-id="${week.id}" placeholder="Add your notes for this week...">${weekData.notes || ""}</textarea>
+                    </div>
+                `;
+                list.appendChild(card);
+
+                card.querySelector(".week-header").addEventListener("click", () => {
+                    card.classList.toggle("open");
+                });
+
+                card.querySelector(`#check-${week.id}`).addEventListener("change", (e) => {
+                    const d = loadData();
+                    if (!d[week.id]) d[week.id] = { completed: false, notes: "" };
+                    d[week.id].completed = e.target.checked;
+                    saveData(d);
+                    render();
+                });
+
+                let debounce;
+                card.querySelector(`.notes-area`).addEventListener("input", (e) => {
+                    clearTimeout(debounce);
+                    debounce = setTimeout(() => {
+                        const d = loadData();
+                        if (!d[week.id]) d[week.id] = { completed: false, notes: "" };
+                        d[week.id].notes = e.target.value;
+                        saveData(d);
+                    }, 300);
+                });
+            });
+
+            document.getElementById("progress-count").textContent = `${completedCount} / 10 completed`;
+            document.getElementById("progress-fill").style.width = `${(completedCount / 10) * 100}%`;
+
+            const suggest = document.getElementById("suggest-next");
+            if (completedCount === 10) {
+                suggest.className = "suggest-next all-done";
+                suggest.innerHTML = `<p>Congratulations!</p><strong>All 10 weeks completed!</strong>`;
+            } else {
+                const next = WEEKS.find(w => !(data[w.id] && data[w.id].completed));
+                suggest.className = "suggest-next";
+                suggest.innerHTML = `<p>Up next</p><strong>Week ${next.id}: ${next.title}</strong>`;
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
